@@ -65,7 +65,7 @@ def ss(text):
     if part2_score > 40:
         part2_score = 40
 
-    total = (random_score+basic_score+part2_score+10)/4  # 本題滿分25
+    total = (random_score+basic_score+part2_score+10)*0.8/4  # 本題滿分25
     if total <0:
         total=0
     return total
