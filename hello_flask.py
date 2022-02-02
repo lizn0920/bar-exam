@@ -2,6 +2,9 @@
 from flask import Flask, request, render_template
 import re
 import random
+import difflib
+import pygsheets
+import datetime
 app = Flask(__name__)
 
 
@@ -82,6 +85,11 @@ def hello():
     if request.method == 'POST':
         Score = ss(request.form['Answer'])
         Score = str(Score)
+        gc = pygsheets.authorize(service_file='mlgskey.json')
+        表 = gc.open_by_url(
+            'https://docs.google.com/spreadsheets/d/1YnYEvkUiwCt1THsS367sL9e1YcD3RDfNNqs_ruqObng')[0]
+        表.append_table([str(datetime.datetime.now()), '',
+                       Score, request.form['Answer']])
         return render_template('result.html', Score=Score)
 
 
