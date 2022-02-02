@@ -2,9 +2,9 @@
 from flask import Flask, request, render_template
 import re
 import random
-import difflib
-import pygsheets
-import datetime
+import requests
+import json
+
 app = Flask(__name__)
 
 
@@ -68,9 +68,7 @@ def ss(text):
     if part2_score > 40:
         part2_score = 40
 
-    total = (random_score+basic_score+part2_score+10)*0.8/4  # 本題滿分25
-    if total <0:
-        total=0
+    total = (random_score+basic_score+part2_score+10)/4  # 本題滿分25
     return total
 
 
@@ -85,70 +83,15 @@ def hello():
     if request.method == 'POST':
         Score = ss(request.form['Answer'])
         Score = str(Score)
-        gc = pygsheets.authorize(service_file='mlgskey.json')
-        表 = gc.open_by_url(
-            'https://docs.google.com/spreadsheets/d/1YnYEvkUiwCt1THsS367sL9e1YcD3RDfNNqs_ruqObng')[0]
-        表.append_table([str(datetime.datetime.now()), '',
-                       Score, request.form['Answer']])
+        mydata = {"content": request.form['Answer'], "score": Score}
+        json_mydata = json.loads(mydata)
+
+        r = requests.post(
+            'https://script.google.com/macros/s/AKfycbwgWFec9W7fraQvSW6XknHBhoWR7n19L52y1RxSLii9hFudmhNcFMMooRzVhBH7KxvV/exec', data=json_mydata)
+
         return render_template('result.html', Score=Score)
 
 
 if __name__ == '__main__':
     app.debug = True
     app.run()
-
-
-'''from flask import Flask, request, render_template, redirect, url_for
-from flask import flash
-
-app = Flask(__name__)
-
-@app.route('/loginurl', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        if login_check(request.form['username'], request.form['password']):
-            flash('Login Success!')
-            return redirect(url_for('hello', username=request.form.get('username')))
-    return render_template('login.html')
-
-def login_check(username, password):
-    """登入帳號密碼檢核"""
-    if username == 'admin' and password == 'hello':
-        return True
-    else:
-        return False
-
-@app.route('/hello/<username>')
-def hello(username):
-    return render_template('hello.html', username=username)
-
-
-if __name__ == '__main__':
-    app.debug = True
-    app.secret_key = "Your Key"
-    app.run()'''
-
-
-'''@app.route('/loginurl', methods=['GET', 'POST'])
-def login():
-    if request.method == 'POST':
-        return redirect(url_for('hello', username=request.form.get('username')))
-
-    return render_template('login.html')
-
-@app.route('/hello/<username>')
-def hello(username):
-    return render_template('hello.html', username=username)
-
-if __name__ == '__main__':
-    app.debug = True
-    app.run()'''
-
-###############################
-'''@app.route('/para/<user>')
-def index(user):
-    return render_template('abc.html', user_template=user)
-
-if __name__ == '__main__':
-    app.debut = True
-    app.run()'''
